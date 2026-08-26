@@ -32,7 +32,7 @@ Clone el repositorio localmente e instale las librerías nativas binarias requer
 ```bash
 # Clonar el repositorio institucional
 git clone https://github.com
-cd tu-repositorio
+cd censo-pipeline-geoanalytics
 
 # Instalar dependencias espaciales core en sistemas basados en Ubuntu/Debian
 sudo apt update && sudo apt install gdal-bin libgdal-dev postgis postgresql-18-postgis-3.6 -y
