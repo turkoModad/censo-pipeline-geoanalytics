@@ -27,6 +27,7 @@ fiona==1.10.1
 folium==0.20.0
 fonttools==4.63.0
 fqdn==1.5.1
+GeoAlchemy2==0.20.0
 geopandas==1.1.4
 greenlet==3.5.5
 h11==0.16.0
