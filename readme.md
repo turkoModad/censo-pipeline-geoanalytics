@@ -35,7 +35,7 @@ git clone https://github.com
 cd censo-pipeline-geoanalytics
 
 # Instalar dependencias espaciales core en sistemas basados en Ubuntu/Debian
-sudo apt update && sudo apt install gdal-bin libgdal-dev postgis postgresql-18-postgis-3.6 -y
+sudo apt update && sudo apt install gdal-bin libgdal-dev postgis postgresql-18-postgis-3 -y
 ```
 
 ### 2. Inicialización del Servidor de Base de Datos
@@ -44,6 +44,21 @@ Acceda a su terminal interactiva de `psql` (o cliente DBMS equivalente) y cree d
 ```sql
 CREATE DATABASE censo_geolocalizado;
 ```
+
+Una vez creada la base, conéctese a **`censo_geolocalizado`** y habilite PostGIS. La extensión debe existir en la base de destino antes de ejecutar la carga de la capa vectorial:
+
+```sql
+\c censo_geolocalizado
+CREATE EXTENSION IF NOT EXISTS postgis;
+```
+
+Verifique la instalación antes de continuar:
+
+```sql
+SELECT PostGIS_Full_Version();
+```
+
+Si esta consulta no devuelve la versión de PostGIS, la carga geoespacial no podrá crear las columnas de tipo `geometry`.
 
 ### 3. Configuración de Variables de Entorno Seguras
 Genere un archivo denominado **`.env`** en el directorio raíz del proyecto para parametrizar las credenciales de red local, evitando la exposición de datos sensibles en el código fuente:
@@ -57,7 +72,7 @@ POSTGRES_PORT=5432
 ```
 
 ### 4. Despliegue del Entorno Virtual de Aislamiento
-Inicialice el entorno virtual de Python, proceda con su activación e instale de forma determinista el catálogo de dependencias del pipeline:
+Inicialice el entorno virtual de Python, proceda con su activación e instale de forma determinista el catálogo de dependencias del pipeline. El archivo `requirements.txt` debe incluir `GeoAlchemy2`, dependencia necesaria para que GeoPandas pueda persistir geometrías mediante `to_postgis()`:
 
 ```bash
 # Generar el entorno virtual aislado bajo Python 3.11
@@ -69,6 +84,9 @@ source .venv/bin/activate
 # Actualizar el gestor de paquetes e instalar dependencias indexadas
 pip install --upgrade pip
 pip install -r requirements.txt
+
+# Verificar la dependencia requerida para la escritura PostGIS
+python -c "import geopandas, geoalchemy2; print('GeoPandas:', geopandas.__version__); print('GeoAlchemy2:', geoalchemy2.__version__)"
 ```
 
 ### 5. Estructuración y Disposición de Data Assets
@@ -88,12 +106,44 @@ tu-repositorio/
 ```
 
 ### 6. Ejecución y Orquestación del Pipeline
-Abra el archivo interactivo `main.ipynb` dentro de su entorno de desarrollo integrado (IDE). El pipeline ejecutará de forma secuencial y automatizada las siguientes fases:
-1.  Inyección y registro de la extensión `postgis` en el esquema físico.
+Abra el archivo interactivo `main.ipynb` dentro de su entorno de desarrollo integrado (IDE). Antes de ejecutarlo, asegúrese de que el kernel seleccionado corresponde al entorno virtual creado en el paso anterior.
+
+El pipeline ejecutará de forma secuencial y automatizada las siguientes fases:
+1.  Verificación de la conexión con PostgreSQL y disponibilidad de la extensión `postgis`.
 2.  Compilación del esquema de datos relacionales (DDL y constraints de clave foránea).
-3.  Operación de carga masiva de datos vectoriales y tabulares mediante el protocolo de alta velocidad `COPY FROM STDIN`.
-4.  Normalización, reproyección y cálculo de proyecciones geográficas a EPSG:4326 (WGS 84).
-5.  Evaluación cuantitativa en la suite de auditoría interna de datos (QA).
-6.  Generación de artefactos analíticos visuales en el directorio local.
+3.  Operación de carga de datos tabulares mediante el flujo definido por el notebook.
+4.  Lectura, normalización y validación de la capa vectorial `radios2022c_vivVacias.gpkg`.
+5.  Persistencia de los radios censales como geometrías nativas en `public.geo_radios_2022` mediante GeoPandas/GeoAlchemy2.
+6.  Verificación de registros, geometrías, SRID y consistencia de la capa espacial almacenada.
+7.  Normalización, reproyección y cálculo de proyecciones geográficas a EPSG:4326 (WGS 84), cuando corresponda al flujo de análisis.
+8.  Evaluación cuantitativa en la suite de auditoría interna de datos (QA).
+9.  Generación de artefactos analíticos visuales en el directorio local.
+
+### 7. Verificación de la Capa Geoespacial en PostgreSQL
+Una vez finalizada la ejecución, la capa vectorial debe estar disponible como tabla espacial **`public.geo_radios_2022`**. La comprobación mínima puede realizarse desde `psql`:
+
+```sql
+SELECT COUNT(*) AS registros
+FROM public.geo_radios_2022;
+
+SELECT
+    COUNT(*) AS registros,
+    COUNT(geometry) AS geometrías,
+    ST_SRID(geometry) AS srid,
+    GeometryType(geometry) AS tipo_geometria
+FROM public.geo_radios_2022
+GROUP BY ST_SRID(geometry), GeometryType(geometry);
+
+SELECT COUNT(*) AS geometrías_invalidas
+FROM public.geo_radios_2022
+WHERE NOT ST_IsValid(geometry);
+```
+
+La primera consulta comprueba la presencia de registros; la segunda verifica que la columna espacial haya sido creada con su SRID y tipo geométrico; la tercera permite detectar geometrías que requieran revisión antes de utilizarlas en análisis espaciales.
+
+La tabla `geo_radios_2022` conserva la capa vectorial separada del modelo dimensional. Esto permite consultar atributos censales y geometría de forma independiente y, cuando sea necesario, relacionarla con el resto del modelo mediante los identificadores geográficos disponibles.
+
+### 8. Consideraciones de Replicación
+Para reproducir el proyecto desde cero, el orden recomendado es: disponer de los datos fuente y del GeoPackage, preparar PostgreSQL, habilitar PostGIS en la base de destino, crear el entorno Python, instalar `requirements.txt`, configurar `.env` y finalmente ejecutar `main.ipynb`. No es necesario convertir manualmente el GeoPackage a CSV ni almacenar la geometría como texto: la capa `.gpkg` se conserva como fuente vectorial y el notebook la persiste como geometría nativa de PostGIS.
 
 ---
