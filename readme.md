@@ -147,3 +147,22 @@ La tabla `geo_radios_2022` conserva la capa vectorial separada del modelo dimens
 Para reproducir el proyecto desde cero, el orden recomendado es: disponer de los datos fuente y del GeoPackage, preparar PostgreSQL, habilitar PostGIS en la base de destino, crear el entorno Python, instalar `requirements.txt`, configurar `.env` y finalmente ejecutar `main.ipynb`. No es necesario convertir manualmente el GeoPackage a CSV ni almacenar la geometría como texto: la capa `.gpkg` se conserva como fuente vectorial y el notebook la persiste como geometría nativa de PostGIS.
 
 ---
+
+# Guía de Contribución
+
+¡Las contribuciones son bienvenidas! Este proyecto está abierto a la colaboración de la comunidad. Para garantizar la estabilidad del pipeline, la integridad de los datos y el cumplimiento de las aserciones de QA, todo cambio debe enviarse mediante **Pull Requests** para su revisión y aprobación.
+
+## Flujo para Colaborar
+
+1. **Fork del Repositorio:** Crea una copia del proyecto en tu cuenta de GitHub.
+2. **Crear una Rama (Branch):** Trabaja tus cambios en una rama descriptiva:
+   ```bash
+   git checkout -b feature/nueva-funcionalidad
+   # o para correcciones
+   git checkout -b fix/correccion-geometria
+   ```
+3. **Validación Local:** Asegúrate de que el notebook y las verificaciones espaciales/SQL se ejecuten sin errores en tu entorno local antes de subir el código.
+4. **Enviar Pull Request (PR):** Abre un Pull Request apuntando a la rama `main` del repositorio original con una descripción clara de las mejoras o soluciones implementadas.
+5. **Revisión y Aprobación:** Tu PR será revisado por el mantenedor del proyecto. Una vez validados los cambios y superados los criterios de calidad, el código será aprobado y fusionado al repositorio principal.
+
+> **Nota:** Para cambios mayores o reestructuraciones de la arquitectura de la base de datos, por favor abre primero un **Issue** de discusión antes de enviar un Pull Request.
