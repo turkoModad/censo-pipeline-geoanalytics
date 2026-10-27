@@ -1,5 +1,24 @@
 # Censo Data Pipeline & Geo-Analytics (Salta 2022)
 
+<!-- Badges de Estado y Tecnologías -->
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/PostgreSQL-18+-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL">
+  <img src="https://img.shields.io/badge/PostGIS-3.6+-336791?style=for-the-badge&logo=postgis&logoColor=white" alt="PostGIS">
+  <img src="https://img.shields.io/badge/GeoPandas-Spatial-1398B9?style=for-the-badge&logo=pandas&logoColor=white" alt="GeoPandas">
+  <img src="https://img.shields.io/badge/Status-Completed-success?style=for-the-badge" alt="Status">
+</p>
+
+---
+
+## Índice de Contenidos
+- [Características Técnicas de la Arquitectura](#características-técnicas-de-la-arquitectura)
+- [Stack Tecnológico](#stack-tecnológico)
+- [Protocolo de Replicación del Entorno](#protocolo-de-replicación-del-entorno)
+- [Solución de Problemas Frecuentes (Troubleshooting)](#solución-de-problemas-frecuentes-troubleshooting)
+- [Guía de Contribución](#guía-de-contribución)
+
+
 Este proyecto implementa un pipeline de ingeniería de datos de extremo a extremo (End-to-End Data Pipeline) para la extracción, limpieza, transformación, modelado relacional y análisis geoespacial de los microdatos correspondientes al Censo Nacional de Población, Hogares y Viviendas 2022 para la Provincia de Salta, Argentina.
 
 A partir de registros crudos y desestructurados provenientes de la plataforma REDATAM, se diseñó una arquitectura de base de datos relacional y espacial sobre PostgreSQL y PostGIS. El flujo de trabajo abarca desde la normalización de las variables hasta la validación automatizada de integridad estructural mediante aserciones y la generación de componentes de visualización analítica de alta fidelidad.
@@ -148,6 +167,19 @@ Para reproducir el proyecto desde cero, el orden recomendado es: disponer de los
 
 ---
 
+## Solución de Problemas Frecuentes (Troubleshooting)
+
+Durante el aprovisionamiento o ejecución del pipeline, ten en cuenta las siguientes consideraciones técnicas:
+
+* **Error de dependencias de GDAL en Linux (`gdal-config not found`):**
+  Asegúrate de haber instalado correctamente las librerías nativas del sistema operativo antes de compilar `GeoPandas` o `Fiona`:
+  ```bash
+  sudo apt install libgdal-dev gdal-bin
+  export CFLAGS="$(gdal-config --cflags)"
+  export LDFLAGS="$(gdal-config --libs)"
+
+---
+
 # Guía de Contribución
 
 ¡Las contribuciones son bienvenidas! Este proyecto está abierto a la colaboración de la comunidad. Para garantizar la estabilidad del pipeline, la integridad de los datos y el cumplimiento de las aserciones de QA, todo cambio debe enviarse mediante **Pull Requests** para su revisión y aprobación.
@@ -166,3 +198,11 @@ Para reproducir el proyecto desde cero, el orden recomendado es: disponer de los
 5. **Revisión y Aprobación:** Tu PR será revisado por el mantenedor del proyecto. Una vez validados los cambios y superados los criterios de calidad, el código será aprobado y fusionado al repositorio principal.
 
 > **Nota:** Para cambios mayores o reestructuraciones de la arquitectura de la base de datos, por favor abre primero un **Issue** de discusión antes de enviar un Pull Request.
+
+---
+
+## Autor
+
+Desarrollado por **José Aníbal Modad**
+* **GitHub:** [@turkoModad](https://github.com/turkoModad)
+* **Enfoque:** Ingeniería de Datos, PostGIS, Sistemas RAG y Analítica Operativa Avanzada.
